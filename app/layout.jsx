@@ -1,33 +1,28 @@
-import '@styles/globals.css';
-import Nav from '@components/Nav';
-import Provider from '@components/Provider';
-import Head from 'next/head';
+import "@styles/globals.css";
+
+import Nav from "@components/Nav";
+import Provider from "@components/Provider";
 
 export const metadata = {
-    title: "Quasar",
-    description: "A place to find and share writing prompts",
-}
+  title: "Promptopia",
+  description: "Discover & Share AI Prompts",
+};
 
-const RootLayout = ({ children }) => {
-    return (
-        <html lang="en">
-            <Head>
-                <link rel="icon" href="/favicon.ico" sizes="any" />
-            </Head>
-            <body>
-                <Provider>
-                    <div className="main">
-                        <div className="gradient"></div>
-                    </div>
+const RootLayout = ({ children }) => (
+  <html lang='en'>
+    <body>
+      <Provider>
+        <div className='main'>
+          <div className='gradient' />
+        </div>
 
-                    <main className="app">
-                        <Nav />
-                        {children}
-                    </main>
-                </Provider>
-            </body>
-        </html>
-    )
-}
+        <main className='app'>
+          <Nav />
+          {children}
+        </main>
+      </Provider>
+    </body>
+  </html>
+);
 
-export default RootLayout
+export default RootLayout;
