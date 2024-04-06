@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 import PromptCard from "./PromptCard";
 
@@ -20,49 +20,55 @@ const PromptCardList = ({ data, handleTagClick }) => {
 
 const Feed = () => {
   const [allPosts, setAllPosts] = useState([]);
-
-  // Search states
   const [searchText, setSearchText] = useState("");
-  const [searchTimeout, setSearchTimeout] = useState(null);
   const [searchedResults, setSearchedResults] = useState([]);
 
   const fetchPosts = async () => {
-    const response = await fetch("/api/prompt");
-    const data = await response.json();
-
-    setAllPosts(data);
+    try {
+      const response = await fetch("/api/prompt");
+      const data = await response.json();
+      setAllPosts(data);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      // Handle error (e.g., display error message to the user)
+    }
   };
 
   useEffect(() => {
     fetchPosts();
   }, []);
 
-  const filterPrompts = (searchtext) => {
-    const regex = new RegExp(searchtext, "i"); // 'i' flag for case-insensitive search
-    return allPosts.filter(
-      (item) =>
-        regex.test(item.creator.username) ||
-        regex.test(item.tag) ||
-        regex.test(item.prompt)
-    );
-  };
+  const filterPrompts = useMemo(() => {
+    return (searchtext) => {
+      const regex = new RegExp(searchtext, "i");
+      return allPosts.filter(
+        (item) =>
+          regex.test(item.creator.username) ||
+          regex.test(item.tag) ||
+          regex.test(item.prompt)
+      );
+    };
+  }, [allPosts]);
 
   const handleSearchChange = (e) => {
-    clearTimeout(searchTimeout);
-    setSearchText(e.target.value);
-
-    // debounce method
-    setSearchTimeout(
-      setTimeout(() => {
-        const searchResult = filterPrompts(e.target.value);
-        setSearchedResults(searchResult);
-      }, 500)
-    );
+    const searchText = e.target.value;
+    setSearchText(searchText);
+    debounceSearch(searchText);
   };
+
+  const debounceSearch = useMemo(() => {
+    let timeoutId;
+    return (searchText) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        const searchResult = filterPrompts(searchText);
+        setSearchedResults(searchResult);
+      }, 500);
+    };
+  }, [filterPrompts]);
 
   const handleTagClick = (tagName) => {
     setSearchText(tagName);
-
     const searchResult = filterPrompts(tagName);
     setSearchedResults(searchResult);
   };
@@ -79,13 +85,8 @@ const Feed = () => {
           className='search_input peer'
         />
       </form>
-
-      {/* All Prompts */}
       {searchText ? (
-        <PromptCardList
-          data={searchedResults}
-          handleTagClick={handleTagClick}
-        />
+        <PromptCardList data={searchedResults} handleTagClick={handleTagClick} />
       ) : (
         <PromptCardList data={allPosts} handleTagClick={handleTagClick} />
       )}
