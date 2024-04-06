@@ -53,8 +53,19 @@ const Feed = () => {
   const handleSearchChange = (e) => {
     const searchText = e.target.value;
     setSearchText(searchText);
-    debounceSearch(searchText);
   };
+  
+  useEffect(() => {
+    if (!searchText) {
+      setSearchedResults([]); // Reset search results if search text is empty
+      return;
+    }
+  
+    // Perform search when search text changes
+    const searchResult = filterPrompts(searchText);
+    setSearchedResults(searchResult);
+  }, [searchText, filterPrompts]);
+
 
   const debounceSearch = useMemo(() => {
     let timeoutId;
